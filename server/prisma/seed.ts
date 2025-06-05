@@ -225,9 +225,11 @@ async function main() {
   // 7. Create Payment
   await prisma.payment.create({
     data: {
+      amount: 1500,
+      status: 'PAID', // required
       amountDue: 1500,
       amountPaid: 1500,
-      paymentStatus: 'PAID', // if enum
+      paymentStatus: 'PAID',
       paymentDate: new Date('2024-01-01'),
       dueDate: new Date('2024-01-01'),
       method: 'Credit Card',

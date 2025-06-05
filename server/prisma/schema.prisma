@@ -144,17 +144,16 @@ model Lease {
 }
 
 model Payment {
-  id            Int      @id @default(autoincrement())
-  amount Int
-  amountDue     Float
-  method        String
-  status       String
-  amountPaid    Float
-  dueDate       DateTime
+  id            Int           @id @default(autoincrement())
+  amount        Int
+  status        String        // or an enum
+  amountDue     Int
+  amountPaid    Int
+  paymentStatus String        // or enum
   paymentDate   DateTime
-  paymentStatus String
+  dueDate       DateTime
+  method        String
   leaseId       Int
-  createdAt DateTime @default(now())
-
-  lease Lease @relation(fields: [leaseId], references: [id])
+  lease         Lease         @relation(fields: [leaseId], references: [id])
+  createdAt     DateTime      @default(now())
 }
