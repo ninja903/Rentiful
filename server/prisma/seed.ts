@@ -113,13 +113,166 @@
 //   })
 //   .finally(() => prisma.$disconnect());
 
-import { PrismaClient } from '@prisma/client';
+// working script//
+
+// import { PrismaClient } from '@prisma/client';
+
+// const prisma = new PrismaClient();
+
+// async function main() {
+//   console.log('🌱 Seeding...');
+
+//   await prisma.payment.deleteMany();
+//   await prisma.lease.deleteMany();
+//   await prisma.application.deleteMany();
+//   await prisma.tenant.deleteMany();
+//   await prisma.property.deleteMany();
+//   await prisma.manager.deleteMany();
+//   await prisma.location.deleteMany();
+
+//   // 1. Create Location
+//   const location = await prisma.location.create({
+//     data: {
+//       address: '123 Main St',
+//       city: 'Springfield',
+//       state: 'IL',
+//       postalCode: '62704',
+//       latitude: 39.7817,
+//       longitude: -89.6501,
+//       country:'USA',
+//     },
+//   });
+
+//   // 2. Create Manager
+//   const manager = await prisma.manager.create({
+//     data: {
+//       clerkUserId: 'manager_clerk_id_123',
+//       name: 'John Manager',
+//       email: 'manager@example.com',
+//       phoneNumber: '123-456-7890',
+//     },
+//   });
+
+//   // 3. Create Property
+//   const property = await prisma.property.create({
+//     data: {
+//       name: 'Sunny Downtown Apartment',
+//       description: 'A beautiful apartment in the heart of downtown.',
+//       pricePerMonth: 1500,
+//       securityDeposit: 1500,
+//       applicationFee: 50,
+//       photoUrls: [
+//         'https://example.com/apartment1.jpg',
+//         'https://example.com/apartment2.jpg',
+//       ],
+//       amenities: ['AIR_CONDITIONING', 'PARKING', 'HIGH_SPEED_INTERNET'],
+//       highlights: ['CLOSE_TO_TRANSIT', 'LUXURY'],
+//       isPetsAllowed: true,
+//       isParkingIncluded: true,
+//       beds: 2,
+//       baths: 1.5,
+//       squareFeet: 850,
+//       propertyType: 'APARTMENT',
+//       postedDate: new Date('2023-05-15'),
+//       averageRating: 4.5,
+//       numberOfReviews: 12,
+//       locationId: location.id,
+//       managerClerkId: manager.clerkUserId,
+//     },
+//   });
+
+//   // 4. Create Tenant
+//   const tenant = await prisma.tenant.create({
+//     data: {
+//       clerkUserId: 'tenant_clerk_id_456',
+//       name: 'Jane Tenant',
+//       email: 'tenant@example.com',
+//       phoneNumber: '987-654-3210',
+//       properties: { connect: { id: property.id } }, // example tenant-property relation
+//       favorites: { connect: { id: property.id } },  // example favorite
+//     },
+//   });
+
+//   // 5. Create Application
+//   const application = await prisma.application.create({
+//     data: {
+//       applicationDate: new Date(),
+//       status: 'PENDING',
+//       propertyId: property.id,
+//       tenantClerkId: tenant.clerkUserId,
+//       name: tenant.name,
+//       email: tenant.email,
+//       phoneNumber: tenant.phoneNumber,
+//       message: 'Looking forward to hearing from you!',
+//     },
+//   });
+
+//   // 6. Create Lease
+//   const lease = await prisma.lease.create({
+//     data: {
+//       startDate: new Date('2024-01-01'),
+//       endDate: new Date('2024-12-31'),
+//       rent: 1500,
+//       deposit: 1500,
+//       propertyId: property.id,
+//       tenantClerkId: tenant.clerkUserId,
+//       application: {
+//         connect: {
+//           id: application.id,
+//         },
+//       },
+//     },
+//   });
+
+//   // 7. Create Payment
+//   await prisma.payment.create({
+//     data: {
+//       amount: 1500,
+//       status: 'PAID', // required
+//       amountDue: 1500,
+//       amountPaid: 1500,
+//       paymentStatus: 'PAID',
+//       paymentDate: new Date('2024-01-01'),
+//       dueDate: new Date('2024-01-01'),
+//       method: 'Credit Card',
+//       leaseId: lease.id,
+//       createdAt: new Date(),
+//     },
+//   });
+
+//   console.log('✅ Seeding completed.');
+// }
+
+// main()
+//   .catch((e) => {
+//     console.error('❌ Seed error:', e);
+//     process.exit(1);
+//   })
+//   .finally(async () => {
+//     await prisma.$disconnect();
+//   });
+
+
+// new method // 
+import { PrismaClient , Amenity, Highlight, PropertyType} from '@prisma/client';
+import fs from 'fs';
+import path from 'path';
 
 const prisma = new PrismaClient();
+
+function parseCoordinates(point: string) {
+  const match = point.match(/POINT\((-?\d+\.\d+)\s+(-?\d+\.\d+)\)/);
+  if (!match) throw new Error(`Invalid coordinates format: ${point}`);
+  return {
+    longitude: parseFloat(match[1]),
+    latitude: parseFloat(match[2]),
+  };
+}
 
 async function main() {
   console.log('🌱 Seeding...');
 
+  // Clear data
   await prisma.payment.deleteMany();
   await prisma.lease.deleteMany();
   await prisma.application.deleteMany();
@@ -128,117 +281,102 @@ async function main() {
   await prisma.manager.deleteMany();
   await prisma.location.deleteMany();
 
-  // 1. Create Location
-  const location = await prisma.location.create({
-    data: {
-      address: '123 Main St',
-      city: 'Springfield',
-      state: 'IL',
-      postalCode: '62704',
-      latitude: 39.7817,
-      longitude: -89.6501,
-      country:'USA',
-    },
+  const seedPath = path.join(__dirname, 'seedData');
+
+  // Load and parse locations
+  const rawLocations = JSON.parse(fs.readFileSync(path.join(seedPath, 'location.json'), 'utf-8'));
+  const locations = rawLocations.map((loc: any) => {
+    const { latitude, longitude } = parseCoordinates(loc.coordinates);
+    return {
+      id: loc.id,
+      address: loc.address,
+      city: loc.city,
+      state: loc.state,
+      postalCode: loc.postalCode,
+      latitude,
+      longitude,
+      country: loc.country,
+    };
   });
 
-  // 2. Create Manager
-  const manager = await prisma.manager.create({
-    data: {
-      clerkUserId: 'manager_clerk_id_123',
-      name: 'John Manager',
-      email: 'manager@example.com',
-      phoneNumber: '123-456-7890',
-    },
-  });
+  await prisma.location.createMany({ data: locations, skipDuplicates: true });
 
-  // 3. Create Property
-  const property = await prisma.property.create({
-    data: {
-      name: 'Sunny Downtown Apartment',
-      description: 'A beautiful apartment in the heart of downtown.',
-      pricePerMonth: 1500,
-      securityDeposit: 1500,
-      applicationFee: 50,
-      photoUrls: [
-        'https://example.com/apartment1.jpg',
-        'https://example.com/apartment2.jpg',
-      ],
-      amenities: ['AIR_CONDITIONING', 'PARKING', 'HIGH_SPEED_INTERNET'],
-      highlights: ['CLOSE_TO_TRANSIT', 'LUXURY'],
-      isPetsAllowed: true,
-      isParkingIncluded: true,
-      beds: 2,
-      baths: 1.5,
-      squareFeet: 850,
-      propertyType: 'APARTMENT',
-      postedDate: new Date('2023-05-15'),
-      averageRating: 4.5,
-      numberOfReviews: 12,
-      locationId: location.id,
-      managerClerkId: manager.clerkUserId,
-    },
-  });
+  // Load and insert managers
+  const rawManagers = JSON.parse(fs.readFileSync(path.join(seedPath, 'manager.json'), 'utf-8'));
+  const managers = rawManagers.map((m: any) => ({
+    clerkUserId: m.clerkUserId,
+    name: `${m.firstName} ${m.lastName}`,
+    email: m.emailAddresses?.[0]?.emailAddress ?? '',
+    phoneNumber: m.phoneNumbers?.[0]?.phoneNumber ?? '',
+  }));
 
-  // 4. Create Tenant
-  const tenant = await prisma.tenant.create({
-    data: {
-      clerkUserId: 'tenant_clerk_id_456',
-      name: 'Jane Tenant',
-      email: 'tenant@example.com',
-      phoneNumber: '987-654-3210',
-      properties: { connect: { id: property.id } }, // example tenant-property relation
-      favorites: { connect: { id: property.id } },  // example favorite
-    },
-  });
+  await prisma.manager.createMany({ data: managers, skipDuplicates: true });
 
-  // 5. Create Application
-  const application = await prisma.application.create({
-    data: {
-      applicationDate: new Date(),
-      status: 'PENDING',
-      propertyId: property.id,
-      tenantClerkId: tenant.clerkUserId,
-      name: tenant.name,
-      email: tenant.email,
-      phoneNumber: tenant.phoneNumber,
-      message: 'Looking forward to hearing from you!',
-    },
-  });
+  // Load and insert tenants
+  const rawTenants = JSON.parse(fs.readFileSync(path.join(seedPath, 'tenant.json'), 'utf-8'));
+  const tenants = rawTenants.map((t: any) => ({
+    clerkUserId: t.clerkUserId,
+    name: `${t.firstName} ${t.lastName}`,
+    email: t.emailAddresses?.[0]?.emailAddress ?? '',
+    phoneNumber: t.phoneNumbers?.[0]?.phoneNumber ?? '',
+  }));
 
-  // 6. Create Lease
-  const lease = await prisma.lease.create({
-    data: {
-      startDate: new Date('2024-01-01'),
-      endDate: new Date('2024-12-31'),
-      rent: 1500,
-      deposit: 1500,
-      propertyId: property.id,
-      tenantClerkId: tenant.clerkUserId,
-      application: {
-        connect: {
-          id: application.id,
-        },
+  await prisma.tenant.createMany({ data: tenants, skipDuplicates: true });
+
+  // Load and insert properties (individually for relations)
+  const rawProperties = JSON.parse(fs.readFileSync(path.join(seedPath, 'property.json'), 'utf-8'));
+  for (const prop of rawProperties) {
+    await prisma.property.create({
+      data: {
+        ...prop,
+        amenities: prop.amenities.map((a: string) => Amenity[a as keyof typeof Amenity])
+        .map((a: string) => Amenity[a as keyof typeof Amenity])
+        .filter((a: any) => a !== undefined),
+        highlights: prop.highlights.map((h: string) => Highlight[h as keyof typeof Highlight])
+        .map((h: string) => Highlight[h as keyof typeof Highlight])
+        .filter((h: any) => h !== undefined),
+        propertyType: PropertyType[prop.propertyType as keyof typeof PropertyType],
+        postedDate: new Date(prop.postedDate),  
       },
-    },
-  });
+    });
+  }
+  // Load and insert applications
+  const rawApplications = JSON.parse(fs.readFileSync(path.join(seedPath, 'application.json'), 'utf-8'));
+  for (const app of rawApplications) {
+    await prisma.application.create({
+      data: {
+        ...app,
+        applicationDate: new Date(app.applicationDate),
+      },
+    });
+  }
 
-  // 7. Create Payment
-  await prisma.payment.create({
-    data: {
-      amount: 1500,
-      status: 'PAID', // required
-      amountDue: 1500,
-      amountPaid: 1500,
-      paymentStatus: 'PAID',
-      paymentDate: new Date('2024-01-01'),
-      dueDate: new Date('2024-01-01'),
-      method: 'Credit Card',
-      leaseId: lease.id,
-      createdAt: new Date(),
-    },
-  });
+  // Load and insert leases
+  const rawLeases = JSON.parse(fs.readFileSync(path.join(seedPath, 'lease.json'), 'utf-8'));
+  for (const lease of rawLeases) {
+    await prisma.lease.create({
+      data: {
+        ...lease,
+        startDate: new Date(lease.startDate),
+        endDate: new Date(lease.endDate),
+      },
+    });
+  }
 
-  console.log('✅ Seeding completed.');
+  // Load and insert payments
+  const rawPayments = JSON.parse(fs.readFileSync(path.join(seedPath, 'payment.json'), 'utf-8'));
+  for (const payment of rawPayments) {
+    await prisma.payment.create({
+      data: {
+        ...payment,
+        paymentDate: new Date(payment.paymentDate),
+        dueDate: new Date(payment.dueDate),
+        createdAt: new Date(payment.createdAt),
+      },
+    });
+  }
+
+  console.log('✅ Seed complete');
 }
 
 main()
@@ -249,4 +387,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-
