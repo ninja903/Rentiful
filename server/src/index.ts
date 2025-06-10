@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';    
-import { dot } from 'node:test/reporters';
+import { authMiddleware } from './middleware/authMiddleware';
 
 
 dotenv.config();
@@ -16,9 +16,10 @@ app.use(morgan("combined"));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors())
 
-app.get('/', (req, res) => {
+app.get("/",  (req, res) => {
     res.send("working")
 });
+app.use("/tenanrs", authMiddleware(["tenant"]), tenantRoutes)
 
 const port = process.env.PORT || 3002;
 app.listen(port, () => {

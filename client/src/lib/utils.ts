@@ -10,10 +10,11 @@ export function cn(...inputs: ClassValue[]) {
 
 // Convert camelCase or PascalCase to formatted string
 export function formatEnumString(str: string) {
+  // Add a space before any uppercase letter, then trim whitespace
   return str.replace(/([A-Z])/g, " $1").trim();
 }
 
-// Format price display
+// Format price display for sliders/filters
 export function formatPriceValue(value: number | null, isMin: boolean) {
   if (value === null || value === 0)
     return isMin ? "Any Min Price" : "Any Max Price";
@@ -24,47 +25,51 @@ export function formatPriceValue(value: number | null, isMin: boolean) {
   return isMin ? `$${value}+` : `<$${value}`;
 }
 
-// Clean search/filter params
+// Clean search/filter params before sending to API
 export function cleanParams(params: Record<string, any>): Record<string, any> {
-  return Object.fromEntries(
-    Object.entries(params).filter(
-      ([_, value]) =>
-        value !== undefined &&
-        value !== "any" &&
-        value !== "" &&
-        (Array.isArray(value) ? value.some((v) => v !== null) : value !== null)
-    )
-  );
+  const cleanedEntries = Object.entries(params).filter(([_, value]) => {
+    if (value === null || value === undefined || value === "any" || value === "") {
+      return false; // Filter out null, undefined, "any", and empty strings
+    }
+    if (Array.isArray(value) && value.length === 0) {
+      return false; // Filter out empty arrays
+    }
+    return true;
+  });
+  return Object.fromEntries(cleanedEntries);
 }
 
 // Toast wrapper for async mutations
 type MutationMessages = {
   success?: string;
-  error: string;
+  error?: string; // Made optional to allow for silent errors if needed
 };
 
 export const withToast = async <T>(
-  mutationFn: Promise<T>,
-  messages: Partial<MutationMessages>
+  mutationPromise: Promise<T>,
+  messages: MutationMessages
 ) => {
   const { success, error } = messages;
 
   try {
-    const result = await mutationFn;
+    const result = await mutationPromise;
     if (success) toast.success(success);
     return result;
   } catch (err) {
-    if (error) toast.error(error);
-    throw err;
+    // Default error message can be provided
+    const errorMessage = error || "An unexpected error occurred.";
+    toast.error(errorMessage);
+    throw err; // Re-throw the error for RTK Query to handle
   }
 };
 
 // Clerk version of user creation after sign-up
+// NOTE: `fetchWithBQ` is an RTK Query utility that already includes auth headers
 export const createNewUserInDatabase = async (
   user: UserResource,
-  jwtToken: string,
+  _jwtToken: string | null | undefined, // Kept for signature compatibility but marked as unused
   userRole: "tenant" | "manager",
-  fetchWithBQ: any
+  fetchWithBQ: (args: { url: string; method: string; body: any }) => Promise<any>
 ) => {
   const createEndpoint = userRole === "manager" ? "/managers" : "/tenants";
 
@@ -74,16 +79,15 @@ export const createNewUserInDatabase = async (
     body: {
       clerkId: user.id,
       name: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
-      email: user.emailAddresses[0]?.emailAddress || "",
-      phoneNumber: user.phoneNumbers[0]?.phoneNumber || "",
+      email: user.primaryEmailAddress?.emailAddress ?? "",
+      phoneNumber: user.primaryPhoneNumber?.phoneNumber ?? "",
     },
-    headers: {
-      Authorization: `Bearer ${jwtToken}`,
-    },
+    // No 'headers' needed here, as `fetchBaseQuery`'s `prepareHeaders` handles authorization
   });
 
   if (createUserResponse.error) {
-    throw new Error("Failed to create user record in database");
+    // This will be caught by the `withToast` wrapper or the calling `queryFn`
+    throw new Error("Failed to create user record in the database.");
   }
 
   return createUserResponse;
