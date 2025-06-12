@@ -1,14 +1,12 @@
 "use client";
 
 import StoreProvider from "@/state/redux";
-import AuthProvider from "./(auth)/authProvider"; // adjust the path as needed
+//import AuthProvider from "./(auth)/authProvider"; // adjust the path as needed
 
 const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
     <StoreProvider>
-      <AuthProvider>
-        {children}
-      </AuthProvider>
+      {children}
     </StoreProvider>
   );
 };

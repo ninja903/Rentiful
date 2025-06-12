@@ -5,7 +5,7 @@ import { getTenant, createTenant } from "../controllers/tenantController";
 
 const router = express.Router();
 
-router.get("/:clerkId", getTenant);
+router.get("/:clerkUserId", getTenant);
 router.post("/", createTenant);
 
 export default router;
