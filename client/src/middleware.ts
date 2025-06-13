@@ -3,13 +3,13 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export default clerkMiddleware((auth, req: NextRequest) => {
-  const { userId, publicMetadata } = auth();
+  const { clerkUserId, publicMetadata } = auth();
   const url = req.nextUrl.clone();
   const pathname = url.pathname.toLowerCase();
   const role = publicMetadata?.role as string | undefined;
 
   // Allow unauthenticated access to public paths
-  if (!userId) return NextResponse.next();
+  if (!clerkUserId) return NextResponse.next();
 
   // Redirect signed-in users away from /signup or /signin
   if (['/signin', '/signup', '/setup-role'].includes(pathname)) {

@@ -26,8 +26,7 @@ const SignUpPage = () => {
         unsafeMetadata={{
           role: userRole,
         }}
-        afterSignUpUrl="/dashboard" // Redirect to our central dashboard handler
-        signInUrl="/sign-in"
+        signInUrl="/select-role"
       />
     </div>
   );
