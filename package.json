@@ -1,0 +1,16 @@
+{
+    "name": "rentiful-monorepo",
+    "version": "1.0.0",
+    "description": "The root of the Rentiful client/server project",
+    "private": true,
+    "scripts": {
+      "dev": "npm run dev --workspace=client & npm run dev --workspace=server",
+      "install:client": "npm install --workspace=client",
+      "install:server": "npm install --workspace=server",
+      "install:all": "npm run install:client && npm run install:server"
+    },
+    "workspaces": [
+      "client",
+      "server"
+    ]
+  }

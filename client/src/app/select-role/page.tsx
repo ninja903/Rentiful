@@ -2,9 +2,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FaUserTie, FaHome } from "react-icons/fa"; // Using react-icons for a better look
+import { FaUserTie, FaHome } from "react-icons/fa"; 
 
-const RoleSelectionPage = () => {
+const SelectRole = () => {
   const router = useRouter();
 
   const handleSelectRole = (role: "tenant" | "manager") => {
@@ -53,4 +53,4 @@ const RoleSelectionPage = () => {
   );
 };
 
-export default RoleSelectionPage;
+export default SelectRole;

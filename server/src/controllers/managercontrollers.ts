@@ -4,6 +4,8 @@ import { Request, Response } from "express";
 import { prisma } from "../lib/prisma"; // 1. Use the shared Prisma instance
 import { Prisma } from "@prisma/client";   // 2. Import Prisma types for error handling
 
+
+
 export const getManager = async (req: Request, res: Response): Promise<void> => {
   try {
 
