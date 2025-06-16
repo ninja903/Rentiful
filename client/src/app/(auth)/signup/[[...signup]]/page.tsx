@@ -21,6 +21,7 @@ const SignUpPage = () => {
     <div className="flex items-center justify-center h-screen">
       <SignUp
         unsafeMetadata={{ role: userRole }}
+        
        
       />
     </div>

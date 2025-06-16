@@ -8,6 +8,8 @@ const SelectRole = () => {
   const router = useRouter();
 
   const handleSelectRole = (role: "tenant" | "manager") => {
+    localStorage.setItem("selectedRole", role);
+    router.push("/sign-up")
     router.push(`/sign-up?role=${role}`);
   };
 
