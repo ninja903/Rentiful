@@ -1,4 +1,4 @@
-
+// app/(auth)/sign-up/[[...sign-up]]/page.tsx
 "use client";
 
 import { SignUp } from "@clerk/nextjs";
@@ -26,7 +26,8 @@ const SignUpPage = () => {
         unsafeMetadata={{
           role: userRole,
         }}
-        signInUrl="/select-role"
+        afterSignUpUrl="/dashboard" // Redirect to our central dashboard handler
+        signInUrl="/sign-in"
       />
     </div>
   );
