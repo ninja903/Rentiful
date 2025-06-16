@@ -1,6 +1,8 @@
 
 "use client";
 
+
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaUserTie, FaHome } from "react-icons/fa"; 
 
@@ -9,7 +11,6 @@ const SelectRole = () => {
 
   const handleSelectRole = (role: "tenant" | "manager") => {
     localStorage.setItem("selectedRole", role);
-    router.push("/sign-up")
     router.push(`/sign-up?role=${role}`);
   };
 
@@ -47,9 +48,9 @@ const SelectRole = () => {
       </div>
        <p className="mt-8 text-gray-500">
         Already have an account?{" "}
-        <a href="/sign-in" className="font-medium text-blue-400 hover:underline">
-          Sign In
-        </a>
+        <Link href="/signin" className="font-medium text-blue-400 hover:underline">
+    Sign In
+  </Link>
       </p>
     </div>
   );

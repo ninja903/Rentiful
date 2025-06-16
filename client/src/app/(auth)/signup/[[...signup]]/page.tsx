@@ -1,29 +1,46 @@
-// app/(auth)/sign-up/[[...sign-up]]/page.tsx
-"use client";
+'use client';
 
-import { SignUp } from "@clerk/nextjs";
-import { useSearchParams } from "next/navigation";
-import React from "react";
+import { SignUp } from '@clerk/nextjs';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
+import React, { useEffect, Suspense } from 'react';
 
-// Wrap in Suspense to safely use useSearchParams
 const SignUpPageWrapper = () => (
-  <React.Suspense fallback={<div className="text-white">Loading...</div>}>
+  <Suspense fallback={<div className="text-white">Loading...</div>}>
     <SignUpPage />
-  </React.Suspense>
+  </Suspense>
 );
 
 const SignUpPage = () => {
   const searchParams = useSearchParams();
-  const role = searchParams.get("role");
-  const userRole = role === "manager" ? "manager" : "tenant";
+  const router = useRouter();
+  const { user, isSignedIn } = useUser();
+
+  //const role = searchParams.get('role');
+  const role = searchParams.get("role")
+  const userRole = role === 'manager' ? 'manager' : 'tenant';
+
+  // Save role after user signs up
+  useEffect(() => {
+    const setUserRole = async () => {
+      if (user && isSignedIn && !user.publicMetadata?.role) {
+        await user.update({ publicMetadata: { role: userRole } });
+
+        // Redirect based on role
+        if (userRole === 'manager') {
+          router.push('/manager');
+        } else {
+          router.push('/tenants');
+        }
+      }
+    };
+
+    setUserRole();
+  }, [user, isSignedIn, userRole, router]);
 
   return (
     <div className="flex items-center justify-center h-screen">
-      <SignUp
-        unsafeMetadata={{ role: userRole }}
-        
-       
-      />
+      <SignUp path="/signup" routing="path" />
     </div>
   );
 };
