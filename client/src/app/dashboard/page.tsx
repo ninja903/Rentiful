@@ -1,29 +1,15 @@
-
+// client/app/dashboard/page.tsx
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
-const DashboardRedirectPage = async () => {
+export default async function DashboardRedirectPage() {
   const user = await currentUser();
-
-  if (!user) {
-
-    redirect("/sign-in");
-  }
+  if (!user) return redirect("/sign-in");
 
   const role = user.publicMetadata?.role as string;
+  if (role === "manager") return redirect("/manager");
+  if (role === "tenant") return redirect("/tenants");
 
-
-  if (role === "manager") {
-    redirect("/manager");
-  } else if (role === "tenant") {
-    redirect("/tenants");
-  } else {
-
-    redirect("/select-role");
-  }
-
-
-  return null;
-};
-
-export default DashboardRedirectPage;
+  // Fallback if role is missing
+  return redirect("/select-role");
+}
