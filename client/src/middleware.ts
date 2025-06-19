@@ -12,15 +12,15 @@ export default clerkMiddleware((auth, req: NextRequest) => {
   if (!clerkUserId) return NextResponse.next();
 
   // Redirect signed-in users away from /signup or /signin
-  if (['/signin', '/signup', '/setup-role'].includes(pathname)) {
+  if (['/signin', '/signup', '/select-role'].includes(pathname)) {
     if (!role) {
-      url.pathname = '/setup-role';
+      url.pathname = '/select-role';
     } else if (role === 'tenant') {
       url.pathname = '/tenants';
     } else if (role === 'manager') {
       url.pathname = '/manager';
     } else {
-      url.pathname = '/setup-role';
+      url.pathname = '/select-role';
     }
 
     return NextResponse.redirect(url);
@@ -28,7 +28,7 @@ export default clerkMiddleware((auth, req: NextRequest) => {
 
   // Require role to access tenant/manager dashboards
   if (!role && (pathname.startsWith('/tenants') || pathname.startsWith('/manager'))) {
-    url.pathname = '/setup-role';
+    url.pathname = '/select-role';
     return NextResponse.redirect(url);
   }
 

@@ -63,12 +63,22 @@
 import { NAVBAR_HEIGHT } from "@/lib/constants";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Button } from "./ui/button";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { useGetAuthUserQuery } from "@/state/api";
 
 const Navbar = () => {
-  const router = useRouter();
+    const router = useRouter();
+    const { data: authUser } = useGetAuthUserQuery();
+    const pathname = usePathname();
+
+    const isDashboardPage = pathname.includes("/managers") || pathname.includes("/tenants");
+
+    const handleSignOut = async () => {
+        await sign
+    }
+
 
   return (
     <div
