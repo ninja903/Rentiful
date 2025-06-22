@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 export default async function DashboardRedirectPage() {
   const user = await currentUser();
-  if (!user) return redirect("/sign-in");
+  if (!user) return redirect("/signin");
 
   const role = user.publicMetadata?.role as string;
   if (role === "manager") return redirect("/manager");

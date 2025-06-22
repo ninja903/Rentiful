@@ -11,7 +11,7 @@ const SelectRole = () => {
 
   const handleSelectRole = (role: "tenant" | "manager") => {
     localStorage.setItem("selectedRole", role);
-    router.push(`/sign-up?role=${role}`);
+    router.push(`/signup?role=${role}`);
   };
 
   return (

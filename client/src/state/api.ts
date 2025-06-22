@@ -24,7 +24,7 @@ export const api = createApi({
         },
     }),
     reducerPath: "api",
-    tagTypes: ["AuthUser"],
+    tagTypes: ["AuthUser", "Managers", "Tenants"],
     endpoints: (build) => ({
   
         getAuthUser: build.query<AuthUser, void>({
@@ -90,9 +90,34 @@ export const api = createApi({
             },
             providesTags: ["AuthUser"],
         }),
+
+        updateTenantSettings: build.mutation
+            <Tenant,
+                { clerkUserId: string } & Partial<Tenant>
+            >({
+                query: ({ clerkUserId, ...updatedTenant }) => ({
+                    url: `tenants/${clerkUserId}`,
+                    method: "PUT",
+                    body: updatedTenant,
+                }),
+                invalidatesTags: (result) => [{ type: "Tenants", id: result?.id }],
+            }),
+            updateManagerSettings: build.mutation
+            <Manager,
+                { clerkUserId: string } & Partial<Manager>
+            >({
+                query: ({ clerkUserId, ...updatedManager }) => ({
+                    url: `managers/${clerkUserId}`,
+                    method: "PUT",
+                    body: updatedManager,
+                }),
+                invalidatesTags: (result) => [{ type: "Managers", id: result?.id }],
+         })
     }),
 });
 
 export const {
-    useGetAuthUserQuery
+    useGetAuthUserQuery,
+    useUpdateTenantSettingsMutation,
+    useUpdateManagerSettingsMutation,
 } = api;
