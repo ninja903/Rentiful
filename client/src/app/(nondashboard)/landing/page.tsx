@@ -11,10 +11,11 @@ const Landing = () => {
           <HeroSection />
           <FeaturesSection />
           <DiscoverSection />
-          <CallToActionSection /> 
+          <CallToActionSection />
           <FooterSection />
      </div>
   )
 }
 
 export default Landing;
+

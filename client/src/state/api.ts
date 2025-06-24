@@ -4,9 +4,9 @@ import { Manager, Tenant } from "@/types/prismaTypes";
 import type { UserResource } from "@clerk/types";
 
 export interface AuthUser {
-  clerkInfo: UserResource;
-  userInfo: Tenant | Manager;
-  userRole: "tenant" | "manager";
+    clerkInfo: UserResource; // Full Clerk user object
+    userInfo: Tenant | Manager; // Either a tenant or manager from DB
+    userRole: "tenant" | "manager";
 }
 
 export const api = createApi({

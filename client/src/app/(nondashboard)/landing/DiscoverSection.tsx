@@ -99,3 +99,4 @@ const DiscoverCard = ({
 );
 
 export default DiscoverSection;
+
